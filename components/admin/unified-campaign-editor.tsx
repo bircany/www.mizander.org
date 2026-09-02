@@ -740,12 +740,12 @@ export function UnifiedCampaignEditor({
               {step + 1} / {steps.length}
             </p>
             {step < steps.length - 1 ? (
-              <button className="admin-action-button" onClick={nextStep} type="button">
+              <button key="next-step" className="admin-action-button" onClick={nextStep} type="button">
                 İleri
                 <ChevronRight className="size-4" />
               </button>
             ) : (
-              <button className="admin-action-button" disabled={isPending} type="submit">
+              <button key="save-campaign" className="admin-action-button" disabled={isPending} type="submit">
                 {isPending ? (
                   <LoaderCircle className="size-4 animate-spin" />
                 ) : record ? (
