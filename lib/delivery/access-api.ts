@@ -58,8 +58,12 @@ export function normalizeDeliveryLinkToken(value: unknown) {
 
 export function normalizeDeliveryAccessCode(value: unknown) {
   const code =
-    typeof value === "string" ? value.trim().toLocaleUpperCase("en-US") : "";
-  return /^[ABCDEFGHJKLMNPQRSTUVWXYZ23456789]{8}$/.test(code) ? code : null;
+    typeof value === "string"
+      ? value.trim().toLocaleUpperCase("en-US").replace(/[\s-]/g, "")
+      : "";
+  return /^(?:\d{4}|[ABCDEFGHJKLMNPQRSTUVWXYZ23456789]{8})$/.test(code)
+    ? code
+    : null;
 }
 
 function text(value: unknown, fallback: string, maxLength = 160) {
@@ -175,7 +179,7 @@ export async function verifyDeliveryAccess(
   const normalizedCode = normalizeDeliveryAccessCode(accessCode);
   if (!normalizedToken || !normalizedCode) {
     throw new DeliveryAccessApiError(
-      "Bağlantı veya 8 karakterli erişim kodu geçersiz.",
+      "Bağlantı veya erişim PIN'i geçersiz.",
       400,
     );
   }

@@ -78,13 +78,18 @@ test("media authorization is purpose-bound and short-lived", () => {
 });
 
 test("access code hashing and VDS-only encryption round-trip", async () => {
-  const encoded = await hashAccessCode("ABCD-2345");
-  assert.equal(await verifyAccessCode("abcd 2345", encoded), true);
-  assert.equal(await verifyAccessCode("ABCD2346", encoded), false);
+  const encoded = await hashAccessCode("0427");
+  assert.equal(await verifyAccessCode("0427", encoded), true);
+  assert.equal(await verifyAccessCode("0428", encoded), false);
+  assert.equal(await verifyAccessCode("427", encoded), false);
+
+  const legacyEncoded = await hashAccessCode("ABCD-2345");
+  assert.equal(await verifyAccessCode("abcd 2345", legacyEncoded), true);
+  assert.equal(await verifyAccessCode("ABCD2346", legacyEncoded), false);
   const key = Buffer.alloc(32, 7);
-  const encrypted = encryptAccessCode("ABCD2345", key);
-  assert.notEqual(encrypted.includes("ABCD2345"), true);
-  assert.equal(decryptAccessCode(encrypted, key), "ABCD2345");
+  const encrypted = encryptAccessCode("0427", key);
+  assert.notEqual(encrypted.includes("0427"), true);
+  assert.equal(decryptAccessCode(encrypted, key), "0427");
   const parts = encrypted.split(".");
   parts[2] = `${parts[2][0] === "A" ? "B" : "A"}${parts[2].slice(1)}`;
   assert.throws(() => decryptAccessCode(parts.join("."), key));

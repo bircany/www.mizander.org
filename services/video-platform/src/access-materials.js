@@ -1,14 +1,13 @@
-import { createHmac, randomBytes } from "node:crypto";
+import { createHmac, randomInt } from "node:crypto";
 
 import { transaction } from "./db.js";
 import { HttpError } from "./errors.js";
-import { accessCodeAlphabet, hashAccessCode } from "./security/access-code.js";
+import { hashAccessCode } from "./security/access-code.js";
 import { encryptAccessCode } from "./security/access-code-crypto.js";
 import { sha256 } from "./security/hashes.js";
 
 function randomAccessCode() {
-  const bytes = randomBytes(8);
-  return [...bytes].map((value) => accessCodeAlphabet[value & 31]).join("");
+  return String(randomInt(0, 10_000)).padStart(4, "0");
 }
 
 export function derivePublicLinkToken(groupId, secret) {

@@ -21,6 +21,12 @@ const { createDeliveryUploadGrant, verifyDeliveryUploadGrant } =
   await import("../lib/delivery/upload-auth");
 const { uploadGrantLifetimeSeconds, validateGroupGate } =
   await import("../lib/delivery/group-code-upload-session");
+const { normalizeDeliveryAccessCode } = await import("../lib/delivery/access-api");
+
+assert.equal(normalizeDeliveryAccessCode("0427"), "0427");
+assert.equal(normalizeDeliveryAccessCode("ABCD-2345"), "ABCD2345");
+assert.equal(normalizeDeliveryAccessCode("427"), null);
+assert.equal(normalizeDeliveryAccessCode("12A4"), null);
 
 assert.equal(normalizePhone("0532 123 45 67"), "905321234567");
 assert.equal(normalizePhone("+90 (532) 123-4567"), "905321234567");

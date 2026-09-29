@@ -58,7 +58,7 @@ test("worker renders immutable link, group and decrypted access code", () => {
   }, {
     id: 42,
     code: "MD-2026-0001",
-    access_code_ciphertext: encryptAccessCode("ABCD2345", key),
+    access_code_ciphertext: encryptAccessCode("0427", key),
   }, {
     key,
     publicLinkSecret: "l".repeat(32),
@@ -66,7 +66,7 @@ test("worker renders immutable link, group and decrypted access code", () => {
   });
   assert.match(text, /Ayşe, Mehmet/);
   assert.match(text, /MD-2026-0001/);
-  assert.match(text, /ABCD2345/);
+  assert.match(text, /0427/);
   assert.match(text, /https:\/\/www\.mizander\.com\.tr\/video\/[A-Za-z0-9_-]{43}/);
 });
 

@@ -52,8 +52,8 @@ export default async function VideoAccessPage({
             Mizan Derneği bağış videonuz
           </h1>
           <p className="mx-auto mt-3 max-w-xl text-sm leading-6 text-[#53645e]">
-            Video herkese açık değildir. Mesajınızda iletilen sekiz karakterli
-            erişim kodunu kullanın.
+            Video herkese açık değildir. Mesajınızda iletilen 4 haneli PIN&apos;i
+            kullanın. Daha önce gönderilen 8 karakterli kodlar da geçerlidir.
           </p>
         </header>
 

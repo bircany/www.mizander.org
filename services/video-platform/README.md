@@ -113,10 +113,11 @@ sets `Content-Disposition` for downloads. Storage paths are never returned.
 base64url(HMAC-SHA256(secret, "mizan-group-link:v1:" + groupId))
 ```
 
-Only its SHA-256 hash is stored. An eight-character code uses
-`ABCDEFGHJKLMNPQRSTUVWXYZ23456789`, is verified with scrypt, and is encrypted
-with AES-256-GCM for VDS-only message rendering. The initialization and
-rotation endpoints never return either plaintext value.
+Only its SHA-256 hash is stored. New access credentials are four-digit numeric
+PINs, verified with scrypt and encrypted with AES-256-GCM for VDS-only message
+rendering. Previously issued eight-character codes remain valid so existing
+deliveries are not broken. The initialization and rotation endpoints never
+return either plaintext value.
 
 Five wrong code attempts inside 15 minutes block the IP+link pair through the
 existing `consume_api_rate_limit` database function. Rotation increments the

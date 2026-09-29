@@ -3,6 +3,7 @@ import { promisify } from "node:util";
 
 const scrypt = promisify(scryptCallback);
 export const accessCodeAlphabet = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
+const accessPinPattern = /^\d{4}$/;
 
 export function normalizeAccessCode(value) {
   return String(value ?? "").trim().toUpperCase().replace(/[\s-]/g, "");
@@ -10,7 +11,10 @@ export function normalizeAccessCode(value) {
 
 export function isValidAccessCodeShape(value) {
   const normalized = normalizeAccessCode(value);
-  return normalized.length === 8 && [...normalized].every((character) => accessCodeAlphabet.includes(character));
+  return accessPinPattern.test(normalized) || (
+    normalized.length === 8 &&
+    [...normalized].every((character) => accessCodeAlphabet.includes(character))
+  );
 }
 
 export async function hashAccessCode(code, salt = randomBytes(16)) {

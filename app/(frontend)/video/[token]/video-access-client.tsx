@@ -34,6 +34,7 @@ export function VideoAccessClient({
 }) {
   const formRef = useRef<HTMLFormElement>(null);
   const [accessCode, setAccessCode] = useState("");
+  const [legacyCode, setLegacyCode] = useState(false);
   const [authorization, setAuthorization] =
     useState<DeliveryAccessAuthorization | null>(null);
   const [warningAccepted, setWarningAccepted] = useState(false);
@@ -50,6 +51,9 @@ export function VideoAccessClient({
   const last48Hours = remaining > 0 && remaining <= 48 * HOUR;
   const sensitiveContent =
     authorization?.sensitiveContent ?? initialMetadata.sensitiveContent;
+  const accessCodeValid = legacyCode
+    ? /^[A-HJ-NP-Z2-9]{8}$/.test(accessCode)
+    : /^\d{4}$/.test(accessCode);
 
   useEffect(() => {
     const offset = Date.parse(serverNow) - Date.now();
@@ -143,32 +147,35 @@ export function VideoAccessClient({
         ) : !authorization ? (
           <form className="mx-auto max-w-md" onSubmit={verifyCode} ref={formRef}>
             <label className="block text-sm font-bold text-[#18392f]" htmlFor="video-access-code">
-              8 karakterli erişim kodu
+              {legacyCode ? "8 karakterli eski erişim kodu" : "4 haneli video PIN'i"}
             </label>
             <input
-              autoCapitalize="characters"
-              autoComplete="off"
+              autoCapitalize={legacyCode ? "characters" : "none"}
+              autoComplete="one-time-code"
               className="mt-2 w-full rounded-2xl border border-[#cfc6b3] bg-white px-4 py-3 text-center font-mono text-xl font-bold uppercase tracking-[0.28em] text-[#18392f] outline-none transition focus:border-[#b38a3e] focus:ring-4 focus:ring-[#b38a3e]/15"
               id="video-access-code"
-              inputMode="text"
-              maxLength={8}
+              inputMode={legacyCode ? "text" : "numeric"}
+              maxLength={legacyCode ? 8 : 4}
               onChange={(event) => {
                 setAccessCode(
-                  event.target.value
-                    .toLocaleUpperCase("en-US")
-                    .replace(/[^ABCDEFGHJKLMNPQRSTUVWXYZ23456789]/g, "")
-                    .slice(0, 8),
+                  legacyCode
+                    ? event.target.value
+                        .toLocaleUpperCase("en-US")
+                        .replace(/[^ABCDEFGHJKLMNPQRSTUVWXYZ23456789]/g, "")
+                        .slice(0, 8)
+                    : event.target.value.replace(/\D/g, "").slice(0, 4),
                 );
                 setError("");
               }}
-              pattern="[A-HJ-NP-Z2-9]{8}"
+              pattern={legacyCode ? "[A-HJ-NP-Z2-9]{8}" : "[0-9]{4}"}
+              placeholder={legacyCode ? "ABCD2345" : "0000"}
               required
               type="text"
               value={accessCode}
             />
             <button
               className="mt-4 w-full rounded-2xl bg-[#b38a3e] px-5 py-3 font-bold text-white transition hover:bg-[#987332] disabled:cursor-not-allowed disabled:opacity-60"
-              disabled={busy || accessCode.length !== 8}
+              disabled={busy || !accessCodeValid}
               type="submit"
             >
               {busy ? "Doğrulanıyor…" : "Videoya eriş"}
@@ -178,6 +185,17 @@ export function VideoAccessClient({
                 {error}
               </p>
             ) : null}
+            <button
+              className="mt-4 w-full text-center text-xs font-semibold text-[#765922] underline underline-offset-4"
+              onClick={() => {
+                setLegacyCode((current) => !current);
+                setAccessCode("");
+                setError("");
+              }}
+              type="button"
+            >
+              {legacyCode ? "4 haneli PIN kullan" : "Eski 8 karakterli kodum var"}
+            </button>
             <p className="mt-4 text-center text-xs leading-5 text-slate-500">
               Beş yanlış denemede erişim 15 dakika geçici olarak engellenir.
             </p>
