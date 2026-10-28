@@ -16,6 +16,7 @@ import {
 export type WhatsAppActionState = {
   success: boolean;
   message: string | null;
+  updatedAt?: string;
   status?: EvolutionConnectionStatus;
   webhook?: EvolutionWebhookStatus;
 };
@@ -39,6 +40,7 @@ export async function manageWhatsAppConnection(
       return {
         success: true,
         message: webhook.message,
+        updatedAt: new Date().toISOString(),
         status: await getEvolutionConnectionStatus(),
         webhook,
       };
@@ -54,6 +56,7 @@ export async function manageWhatsAppConnection(
 
     return {
       success: status.state !== "error" && status.state !== "unconfigured",
+      updatedAt: new Date().toISOString(),
       message:
         intent === "disconnect"
           ? "WhatsApp bağlantısı kapatıldı. Yeniden bağlanmak için QR kodu oluşturabilirsiniz."
@@ -64,6 +67,7 @@ export async function manageWhatsAppConnection(
   } catch (error) {
     return {
       success: false,
+      updatedAt: new Date().toISOString(),
       message:
         error instanceof Error
           ? error.message
