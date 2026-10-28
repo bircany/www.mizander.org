@@ -51,7 +51,14 @@ begin
     v_title := format('%s Kişilik Kurban Video Grubu', v_capacity);
     if exists (select 1 from public.campaigns
                where slug = v_slug or code = v_slug) then
-      raise exception 'Bu bağış alanı zaten var: %', v_slug;
+      if not exists (select 1 from public.campaigns
+                     where slug = v_slug and code = v_slug
+                       and group_capacity = v_capacity
+                       and pricing_model = 'fixed'
+                       and video_delivery = 'video') then
+        raise exception 'Var olan bağış alanı beklenen video grubuyla eşleşmiyor: %', v_slug;
+      end if;
+      continue;
     end if;
 
     insert into public.campaigns (
