@@ -27,6 +27,14 @@ test("video worker has a second database connection for repository updates", asy
   assert.match(worker, /DATABASE_POOL_MAX:\s*"2"/);
 });
 
+test("message worker has a second database connection for access-code upgrades", async () => {
+  const compose = await readFile(composeUrl, "utf8");
+  const worker = compose.match(/  message-worker:\r?\n([\s\S]*?)\r?\n  retention-worker:/)?.[1];
+
+  assert.ok(worker, "message-worker service must exist");
+  assert.match(worker, /DATABASE_POOL_MAX:\s*"2"/);
+});
+
 test("video failure metadata casts variadic JSON parameters explicitly", async () => {
   const repository = await readFile(videoRepositoryUrl, "utf8");
 

@@ -143,7 +143,9 @@ services:
       SERVICE_NAME: message-worker
       WORKER_ID: "${MESSAGE_WORKER_ID:-message-worker-1}"
       HEALTH_FILE: /tmp/mizan-message-worker.health
-      DATABASE_POOL_MAX: "1"
+      # The sender holds its claim connection while access-code rotation
+      # opens a second short-lived transaction.
+      DATABASE_POOL_MAX: "2"
     networks:
       - video_internal
       - video_egress
