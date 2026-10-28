@@ -48,6 +48,12 @@ test("message worker enforces test delivery only when policy requires it", async
   assert.match(repository, /if \(!message\.is_test && requireTestBeforeDispatch && message\.system_payload_snapshot\?\.autoDispatch !== true\)/);
 });
 
+test("message worker skips messages that have exhausted the database retry budget", async () => {
+  const repository = await readFile(messageRepositoryUrl, "utf8");
+
+  assert.match(repository, /where m\.status = 'queued'\s+and m\.attempt_count < 4/);
+});
+
 test("delivery access falls back to the active video expiry for legacy groups", async () => {
   const accessSource = await readFile(accessServiceUrl, "utf8");
   const controlSource = await readFile(deliveryControlServiceUrl, "utf8");

@@ -356,11 +356,15 @@ export async function retryDeliveryMessage(
     id: message.id,
     data: {
       status: "queued",
+      attemptCount: 0,
       scheduledAt: new Date().toISOString(),
       failedAt: null,
       lockedAt: null,
       lockedBy: null,
       lastError: null,
+      lastErrorCode: null,
+      retryClass: "none",
+      nextRetryAt: null,
     },
     overrideAccess: true,
   });

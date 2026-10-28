@@ -27,6 +27,7 @@ export async function claimDeliveryMessage(workerId, leaseMinutes, requireTestBe
        from delivery_messages m
        join operation_groups g on g.id = m.group_id
        where m.status = 'queued'
+         and m.attempt_count < 4
          and not exists (
            select 1 from delivery_messages paced
            where paced.status in ('sent', 'delivered', 'read')
