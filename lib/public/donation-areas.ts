@@ -169,7 +169,14 @@ function computeSuggestedAmounts(targetAmount: number, currency: string) {
 
 function toDonationArea(document: Record<string, unknown>, locale: AppLocale, pool?: Record<string, unknown>): DonationArea | null {
   const source = pool || document;
-  const title = localizedText(source.title, locale);
+  const videoShareGroup = /^video-kurban-([1-7])-kisilik-grup$/.exec(String(document.code || ""));
+  const title = localizedText(source.title, locale) || (videoShareGroup
+    ? locale === "en"
+      ? `${videoShareGroup[1]}-Person Qurbani Video Group`
+      : locale === "ar"
+        ? `مجموعة أضاحي بالفيديو من ${videoShareGroup[1]} أشخاص`
+        : `${videoShareGroup[1]} Kişilik Kurban Video Grubu`
+    : "");
   const slug = typeof document.slug === "string" && document.slug
     ? document.slug
     : title
@@ -185,11 +192,19 @@ function toDonationArea(document: Record<string, unknown>, locale: AppLocale, po
   const categorySlug = categoryDoc ? (typeof categoryDoc.slug === "string" ? categoryDoc.slug : slugify(categoryName)) : "";
   const categoryIcon = categoryDoc && typeof categoryDoc.icon === "string" ? categoryDoc.icon : undefined;
   const categoryColor = categoryDoc && typeof categoryDoc.color === "string" ? categoryDoc.color : undefined;
-  const description = localizedLexicalText(source.description, locale);
+  const description = localizedLexicalText(source.description, locale) || (videoShareGroup
+    ? locale === "en"
+      ? `Donate one share to a ${videoShareGroup[1]}-person Qurbani group with video delivery.`
+      : locale === "ar"
+        ? `ساهم بسهم واحد في مجموعة أضاحي من ${videoShareGroup[1]} أشخاص مع توثيق بالفيديو.`
+        : `Video ile belgelenen ${videoShareGroup[1]} kişilik kurban grubuna bir hisse bağışlayın.`
+    : "");
   const coverImagePath = document.coverImagePath;
   const coverImageAlt = localizedText(source.coverImageAlt, locale) || localizedText(document.coverImageAlt, locale);
   if (!title.trim()) return null;
-  const image = extractCampaignCover(coverImagePath, coverImageAlt, title) ?? extractImage(document.image, title);
+  const image = extractCampaignCover(coverImagePath, coverImageAlt, title)
+    ?? extractImage(document.image, title)
+    ?? (videoShareGroup ? { alt: title, src: "/images/donations/kurban-dagitimi.png" } : null);
   const progress = targetAmount > 0 ? Math.min(100, Math.round((collectedAmount / targetAmount) * 100)) : 0;
   const pricingModel = source.pricingModel === "fixed" ? "fixed" : "free";
   const unitPrice = pricingModel === "fixed" ? numberValue(source.unitPrice) : null;
