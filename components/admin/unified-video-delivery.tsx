@@ -9,6 +9,7 @@ import { DeliveryRowActions } from "@/components/admin/delivery-row-actions";
 import { DeliveryOperationModal } from "@/components/admin/delivery-operation-modal";
 import { DeliveryPanelAutoRefresh } from "@/components/admin/delivery-panel-auto-refresh";
 import { DeliveryVideoFlow } from "@/components/admin/delivery-video-flow";
+import { DeliveryBulkVideoFlow } from "@/components/admin/delivery-bulk-video-flow";
 import type { UnifiedDeliveryRow } from "@/lib/admin/unified-panel-data";
 import {
   filterVideos,
@@ -106,7 +107,18 @@ export function UnifiedVideoDelivery({
   return (
     <div className="space-y-5">
       <DeliveryPanelAutoRefresh />
-      <div className="flex flex-wrap items-center justify-between gap-3"><div className="flex flex-wrap items-center gap-3">{canManage ? <DeliveryVideoFlow rows={rows} /> : null}<p className="text-sm font-semibold">{visible.length} teslimat</p></div><VideoViewSwitch filters={filters} tab={tab} /></div>
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <div className="flex flex-wrap items-center gap-3">
+          {canManage ? (
+            <>
+              <DeliveryVideoFlow rows={rows} />
+              <DeliveryBulkVideoFlow rows={rows} />
+            </>
+          ) : null}
+          <p className="text-sm font-semibold">{visible.length} teslimat</p>
+        </div>
+        <VideoViewSwitch filters={filters} tab={tab} />
+      </div>
       <form
         className="grid gap-3 rounded-xl border border-[var(--admin-border)] bg-[var(--admin-surface-raised)] p-4 sm:grid-cols-2 xl:grid-cols-4"
         method="get"
