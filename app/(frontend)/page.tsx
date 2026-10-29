@@ -458,7 +458,7 @@ export default function HomePage() {
               { icon: "send", value: 954, suffix: "+", label: t("home.shipments"), sublabel: t("home.statSublabels.0") },
               { icon: "group", value: 3588, suffix: "", label: t("home.supporters"), sublabel: t("home.statSublabels.1") },
               { icon: "public", value: 10, suffix: "+", label: t("home.countries"), sublabel: t("home.statSublabels.2") },
-              { icon: "history", value: 2023, suffix: "", label: t("home.activeSince"), sublabel: t("home.statSublabels.3") },
+              { icon: "history", value: "2023", suffix: "", label: t("home.activeSince"), sublabel: t("home.statSublabels.3") },
             ].map((stat, i) => (
               <div
                 key={i}
@@ -468,7 +468,7 @@ export default function HomePage() {
                   {stat.icon}
                 </span>
                 <h4 className="mt-3 text-2xl font-bold text-white sm:mt-4 sm:text-4xl lg:mt-6 lg:text-5xl">
-                  <CountUp end={stat.value} suffix={stat.suffix} />
+                  {typeof stat.value === "string" ? stat.value : <CountUp end={stat.value} suffix={stat.suffix} />}
                 </h4>
                 <p className="mt-2 text-xs font-medium text-white/85 sm:text-base">{stat.label}</p>
                 <p className="mt-1 hidden text-sm text-white/50 sm:block">{stat.sublabel}</p>
