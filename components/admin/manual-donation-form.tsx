@@ -7,7 +7,8 @@ import type { CampaignEditorRecord } from "./unified-campaign-editor";
 import { attachManualProof, findManualDonor, saveManualDonation } from "@/lib/admin/manual-donation-actions";
 import { amountFromCents, moneyCents } from "@/lib/donations/manual-validation";
 import { parseParticipantCsv, type ParticipantCsvRow } from "@/lib/donations/participant-csv";
-import { formatAdminPhoneInput, adminPhoneError } from "@/lib/admin/phone-input";
+import { formatAdminPhoneInput } from "@/lib/admin/phone-input";
+import { normalizeInternationalPhone } from "@/lib/phone";
 import { type CountryCode } from "libphonenumber-js/min";
 import { formatCurrency } from "@/lib/utils";
 
@@ -44,7 +45,10 @@ export function ManualDonationForm({campaigns}: {campaigns:CampaignEditorRecord[
   const validQuantity = Number.isInteger(Number(quantity)) && Number(quantity)>0 && Number(quantity)<=500;
   const participantCount = validQuantity ? Number(quantity) : 0;
   const separate = fixed && participantCount > 1 && participantMode === "different";
-  const completeCount = separate ? Array.from({length:participantCount},(_,i)=>participants[i]).filter(row=>row?.name.trim() && row?.phone.trim() && !adminPhoneError(row.phone, row.country as CountryCode, true)).length : 0;
+  const completeCount = separate ? Array.from({length:participantCount},(_,i)=>participants[i]).filter(row=>{
+    if (!row?.name.trim() || !row?.phone.trim()) return false;
+    try {normalizeInternationalPhone(row.phone,row.country);return true;} catch {return false;}
+  }).length : 0;
   function resizeParticipants(count: number) {
     setParticipants(previous=>Array.from({length:Math.max(count,previous.length)},(_,i)=>previous[i] || {name:"",phone:"",country:"TR"}));
   }
@@ -66,8 +70,10 @@ export function ManualDonationForm({campaigns}: {campaigns:CampaignEditorRecord[
       const formatted = rows.map((row,index)=>{
         const country = row.country as CountryCode;
         const result = formatAdminPhoneInput(row.phone,country);
-        if (!result || adminPhoneError(result.number,result.country,true)) throw new Error(`${index+1}. kişinin telefonu geçerli değil; dosyayı düzeltin.`);
-        return {name:row.name,phone:result.number,country:result.country};
+        if (!result) throw new Error(`${index+1}. kişinin telefonu geçerli değil; dosyayı düzeltin.`);
+        let phone: string;
+        try {phone=normalizeInternationalPhone(result.number,result.country);} catch {throw new Error(`${index+1}. kişinin telefonu geçerli değil; dosyayı düzeltin.`);}
+        return {name:row.name,phone,country:result.country};
       });
       setParticipants(formatted);
       setImportMessage(`${formatted.length} kişi aktarıldı. Kaydetmeden önce listeyi kontrol edin.`);
@@ -126,7 +132,7 @@ export function ManualDonationForm({campaigns}: {campaigns:CampaignEditorRecord[
   const fieldClass = "admin-input w-full";
   return <>
     <button className="inline-flex min-h-8 w-fit shrink-0 items-center gap-1.5 rounded-lg border border-blue-200 bg-blue-50 px-3 py-1.5 text-xs font-semibold text-blue-700 transition hover:border-blue-300 hover:bg-blue-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-300" type="button" onClick={open}><Plus className="size-3.5"/>Bağış kaydı</button>
-    <dialog ref={dialog} className="w-[min(1120px,96vw)] max-h-[94dvh] rounded-2xl bg-[var(--admin-surface)] p-0 text-[var(--admin-text)] backdrop:bg-black/50" onCancel={event=>{if(locked.current) event.preventDefault();}}>
+    <dialog ref={dialog} className="w-[min(1120px,96vw)] max-h-[94dvh] overflow-visible rounded-2xl bg-[var(--admin-surface)] p-0 text-[var(--admin-text)] backdrop:bg-black/50" onCancel={event=>{if(locked.current) event.preventDefault();}}>
       <header className="flex items-center justify-between border-b border-[var(--admin-border)] px-5 py-4 sm:px-7"><div><p className="text-xs font-semibold uppercase tracking-widest text-[var(--admin-muted)]">Bağış yönetimi</p><h2 className="mt-1 text-xl font-bold">IBAN bağış kaydı</h2><p className="mt-1 text-sm text-[var(--admin-muted)]">Ödemeyi ve bağışa katılan kişileri kaydedin.</p></div><button className="admin-icon-button" type="button" disabled={busy} onClick={()=>dialog.current?.close()} aria-label="Pencereyi kapat" title="Pencereyi kapat"><X className="size-5" /></button></header>
       <form ref={form} onSubmit={event=>{event.preventDefault();void submit();}} className="max-h-[calc(94dvh-100px)] overflow-y-auto">
         <div className="space-y-5 px-5 py-5 sm:px-7">

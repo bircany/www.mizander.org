@@ -1,14 +1,17 @@
 "use client";
 
 import { useEffect, useId, useRef, useState } from "react";
-import { getCountryCallingCode, type CountryCode } from "libphonenumber-js/min";
+import { parsePhoneNumberFromString, type CountryCode } from "libphonenumber-js/min";
+import turkishLabels from "react-phone-number-input/locale/tr.json";
 
-import countries from "@/lib/admin/phone-countries.json";
+import { PhoneInput } from "@/components/reui/phone-input";
+import { normalizeInternationalPhone } from "@/lib/phone";
 
-import { adminPhoneError, formatAdminPhoneInput } from "@/lib/admin/phone-input";
-
-// Static labels and order keep server and browser markup identical across ICU versions.
-const flag = (code: string) => String.fromCodePoint(...[...code].map(c => 127397 + c.charCodeAt(0)));
+function phoneError(value: string, country: string, required: boolean) {
+  if (!value.trim()) return required ? "Telefon numarası girin." : "";
+  try { normalizeInternationalPhone(value, country); return ""; }
+  catch { return "Seçilen ülkeye uygun geçerli bir telefon numarası girin."; }
+}
 
 export function AdminPhoneField({ name, label, countryName, country = "TR", value, onChange, onCountryChange, onBlur, required = false, compact = false }: {
   name: string; label: string; countryName: string; country?: string; value?: string;
@@ -16,58 +19,56 @@ export function AdminPhoneField({ name, label, countryName, country = "TR", valu
   onBlur?: () => void; required?: boolean; compact?: boolean;
 }) {
   const id = useId();
+  const container = useRef<HTMLDivElement>(null);
   const [localCountry, setLocalCountry] = useState(country);
   const [localValue, setLocalValue] = useState("");
-  const selected = (onCountryChange ? country : localCountry) as CountryCode;
-  const number = value ?? localValue;
-  const input = useRef<HTMLInputElement>(null);
   const [touched, setTouched] = useState(false);
-  const [editError, setEditError] = useState("");
-  const error = adminPhoneError(number, selected, required);
-  useEffect(() => { input.current?.setCustomValidity(error); }, [error]);
-  const update = (raw: string) => {
-    const result = formatAdminPhoneInput(raw, selected);
-    if (!result) {
-      setEditError("Numara seçilen ülkenin uzunluk sınırını aşıyor veya ülke kodu geçersiz.");
-      return;
-    }
-    setEditError("");
-    setLocalCountry(result.country); onCountryChange?.(result.country);
-    // Preserve backspace over separators; reformat on blur.
-    const next = raw.length < number.length && raw.replace(/\D/g, "") === number.replace(/\D/g, "") ? raw : result.number;
-    setLocalValue(next); onChange?.(next);
-  };
-  const changeCountry = (nextCountry: CountryCode) => {
-    const result = formatAdminPhoneInput(number, nextCountry);
-    // A number that cannot fit the new country must be entered again.
-    const next = result?.number ?? "";
-    setLocalCountry(nextCountry); onCountryChange?.(nextCountry);
-    setLocalValue(next); onChange?.(next);
-    setEditError(""); setTouched(false);
-    input.current?.setCustomValidity(adminPhoneError(next, nextCountry, required));
-  };
-  return <div className="min-w-0 text-sm">
+  const [portalContainer, setPortalContainer] = useState<HTMLElement | null>(null);
+  const selected = onCountryChange ? country : localCountry;
+  const number = value ?? localValue;
+  const error = phoneError(number, selected, required);
+
+  useEffect(() => {
+    setPortalContainer(container.current?.closest("dialog") ?? null);
+  }, []);
+
+  useEffect(() => {
+    container.current?.querySelector<HTMLInputElement>("input[type=tel]")?.setCustomValidity(error);
+  }, [error]);
+
+  return <div ref={container} className="min-w-0 text-sm">
     <label htmlFor={id} className={compact ? "sr-only" : "mb-1 block"}>{label}{required ? " *" : ""}</label>
-    <div className="flex min-w-0 items-center rounded-lg border border-[var(--admin-border)] bg-[var(--admin-surface)] focus-within:border-blue-400 focus-within:ring-2 focus-within:ring-blue-100">
-      <div className="relative flex h-11 w-14 shrink-0 items-center justify-center rounded-l-lg border-r border-[var(--admin-border)] focus-within:ring-2 focus-within:ring-blue-400">
-        <span aria-hidden="true">{flag(selected)} ▾</span>
-        <select aria-label={`${label} ülkesi`} name={countryName} value={selected} onChange={e => changeCountry(e.target.value as CountryCode)} className="absolute inset-0 w-full cursor-pointer opacity-0">
-          {countries.map(({ code, name: countryLabel }) => <option key={code} value={code}>{flag(code)} {countryLabel} (+{getCountryCallingCode(code as CountryCode)})</option>)}
-        </select>
-      </div>
-      <span className="pl-3 text-sm text-[var(--admin-muted)]">+{getCountryCallingCode(selected)}</span>
-      <input ref={input} aria-invalid={touched && !!error} aria-describedby={`${id}-hint`} onInvalid={() => setTouched(true)} id={id} name={name} type="tel" inputMode="numeric" autoComplete="tel-national" dir="ltr" required={required} value={number} onChange={e => update(e.target.value)} onBlur={() => {
-        setTouched(true);
-        const result = formatAdminPhoneInput(number, selected);
-        if (result) {
-          setLocalValue(result.number); onChange?.(result.number);
-          input.current?.setCustomValidity(adminPhoneError(result.number, selected, required));
+    <PhoneInput
+      id={id}
+      name={name}
+      variant="lg"
+      placeholder="Telefon numaranızı giriniz"
+      defaultCountry={selected as CountryCode}
+      labels={turkishLabels}
+      portalContainer={portalContainer}
+      value={number}
+      onChange={next => {
+        const normalized = next || "";
+        setLocalValue(normalized);
+        onChange?.(normalized);
+        const parsedCountry = normalized ? parsePhoneNumberFromString(normalized)?.country : undefined;
+        if (parsedCountry && parsedCountry !== selected) {
+          setLocalCountry(parsedCountry);
+          onCountryChange?.(parsedCountry);
         }
-        if (!error) onBlur?.();
-      }} placeholder={selected === "TR" ? "532 123 45 67" : "Telefon numarası"} className="min-w-0 flex-1 bg-transparent px-3 py-3 text-sm outline-none" />
-    </div>
-    <p id={`${id}-hint`} aria-live="polite" className={`mt-1 text-xs ${editError || (touched && error) ? "text-red-600" : compact ? "sr-only" : "text-[var(--admin-muted)]"}`}>
-      {editError || (touched && error) || (selected === "TR" ? "Başında 0 olmadan 10 rakam · 532 123 45 67" : "Ülke kodunu tekrar yazmadan telefon numarasını girin.")}
+      }}
+      onCountryChange={next => {
+        if (next) {setLocalCountry(next); onCountryChange?.(next);}
+      }}
+      onBlur={() => {setTouched(true); if (!error) onBlur?.();}}
+      required={required}
+      aria-invalid={touched && !!error}
+      aria-describedby={`${id}-hint`}
+      className="w-full"
+    />
+    <input type="hidden" name={countryName} value={selected}/>
+    <p id={`${id}-hint`} aria-live="polite" className={`mt-1 text-xs ${touched && error ? "text-red-600" : "sr-only"}`}>
+      {touched && error ? error : "Ülkeyi seçip telefon numarasını girin."}
     </p>
   </div>;
 }

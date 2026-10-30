@@ -9,6 +9,19 @@ const config: Config = {
   theme: {
     extend: {
       colors: {
+        foreground: "#20261F",
+        "primary-foreground": "#ffffff",
+        muted: "#F3F5F1",
+        "muted-foreground": "#617066",
+        border: "#D8E0D8",
+        input: "#D8E0D8",
+        ring: "#2B6C4B",
+        destructive: "#B42318",
+        popover: "#ffffff",
+        "popover-foreground": "#20261F",
+        accent: "#EDF4EF",
+        "accent-foreground": "#20261F",
+        "secondary-foreground": "#ffffff",
         "on-background": "#1a1c1b",
         "primary-container": "#DCE9DF",
         "on-secondary-fixed-variant": "#65420F",
