@@ -107,6 +107,7 @@ export async function POST(request: Request) {
       console.error("Delivery upload destination is unavailable:", error instanceof Error ? error.message : "unknown error");
       return json({
         ok: false,
+        code: "UPLOAD_SERVICE_NOT_CONFIGURED",
         error: process.env.NODE_ENV === "production"
           ? "Video yükleme servisi şu anda kullanılamıyor. Lütfen daha sonra yeniden deneyin."
           : "Video yükleme servisi bu yerel ortamda bağlı değil. Test video servisi yapılandırılmadan gerçek yükleme yapılamaz.",

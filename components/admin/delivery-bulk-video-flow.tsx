@@ -268,6 +268,7 @@ export function DeliveryBulkVideoFlow({ rows }: { rows: UnifiedDeliveryRow[] }) 
 
     let successCounter = 0;
     let failCounter = 0;
+    let unavailableServiceMessage = "";
 
     // FIFO Queue sequential execution
     for (let index = 0; index < validatedItems.length; index++) {
@@ -302,6 +303,10 @@ export function DeliveryBulkVideoFlow({ rows }: { rows: UnifiedDeliveryRow[] }) 
         });
 
         const session = await sessionRes.json();
+        if (sessionRes.status === 503 && session.code === "UPLOAD_SERVICE_NOT_CONFIGURED") {
+          unavailableServiceMessage = session.error || "Video yükleme servisi bağlı değil.";
+          throw new Error(unavailableServiceMessage);
+        }
         if (!sessionRes.ok || !session.ok || !session.endpoint || !session.metadata?.token) {
           throw new Error(session.error || "Video yükleme başlatılamadı.");
         }
@@ -338,6 +343,10 @@ export function DeliveryBulkVideoFlow({ rows }: { rows: UnifiedDeliveryRow[] }) 
         successCounter++;
       } catch (cause) {
         const msg = cause instanceof Error ? cause.message : "Video yüklenemedi.";
+        if (unavailableServiceMessage) {
+          updateItem(item.id, { status: "waiting", progress: 0, error: "" });
+          break;
+        }
         updateItem(item.id, { status: "failed", error: `${msg} Yeniden deneyebilirsiniz.` });
         failCounter++;
       }
@@ -347,7 +356,9 @@ export function DeliveryBulkVideoFlow({ rows }: { rows: UnifiedDeliveryRow[] }) 
     setCurrentQueueIndex(null);
     router.refresh();
 
-    if (failCounter === 0) {
+    if (unavailableServiceMessage) {
+      setGlobalError(unavailableServiceMessage);
+    } else if (failCounter === 0) {
       setAllDone(true);
     } else {
       setGlobalError(

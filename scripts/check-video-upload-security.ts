@@ -96,7 +96,9 @@ for (const role of ["admin", "field_operator"]) {
 }
 state.uploadDestinationAvailable = false;
 state.calls = 0;
-assert.equal((await request()).status, 503);
+const unavailableResponse = await request();
+assert.equal(unavailableResponse.status, 503);
+assert.equal((await unavailableResponse.json()).code, "UPLOAD_SERVICE_NOT_CONFIGURED");
 assert.equal(state.calls, 0, "missing upload service must not reserve a video");
 state.uploadDestinationAvailable = true;
 assert.ok(
