@@ -25,7 +25,7 @@
     "test:inquiry-pages": "tsx scripts/check-inquiry-pages.ts",
     "test:time": "tsx scripts/check-time.ts",
     "test:phone": "tsx scripts/check-phone.ts && tsx scripts/check-admin-phone-input.ts",
-    "test:manual": "tsx scripts/check-manual-donation-validation.ts && tsx scripts/check-manual-donation-security.ts",
+    "test:manual": "tsx scripts/check-manual-donation-validation.ts && tsx scripts/check-participant-csv.ts && tsx scripts/check-manual-donation-security.ts",
     "test:manual:db": "node --conditions=react-server --import tsx scripts/check-manual-donation-db.ts",
     "test:groups": "tsx scripts/check-group-plan.ts && tsx scripts/check-tail-group-security.ts",
     "test:groups:db": "node --conditions=react-server --import tsx scripts/check-tail-groups-db.ts",

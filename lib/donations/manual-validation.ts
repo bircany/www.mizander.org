@@ -39,10 +39,18 @@ export function parseManualDonation(form: FormData, now = new Date()) {
   const whatsapp = form.get("whatsapp") ? phone(form.get("whatsapp"), whatsappCountry) : donorPhone;
   const note = String(form.get("note") || "").trim();
   if (note.length > 2000) throw new ManualDonationError("Not en fazla 2000 karakter olabilir.");
-  const participants = Array.from({ length: quantity }, (_, i) => ({
-    name: name(form.get(`participantName.${i}`) || donorName),
-    phone: form.get(`participantPhone.${i}`) ? phone(form.get(`participantPhone.${i}`), String(form.get(`participantCountry.${i}`) || country)) : whatsapp,
-  }));
+  const separateParticipants = form.get("participantMode") === "different";
+  const participants = Array.from({ length: quantity }, (_, i) => {
+    const participantName = form.get(`participantName.${i}`);
+    const participantPhone = form.get(`participantPhone.${i}`);
+    if (separateParticipants && (!String(participantName || "").trim() || !String(participantPhone || "").trim())) {
+      throw new ManualDonationError(`${i + 1}. kişi için ad soyad ve telefon girin.`);
+    }
+    return {
+      name: name(participantName || donorName),
+      phone: participantPhone ? phone(participantPhone, String(form.get(`participantCountry.${i}`) || country)) : whatsapp,
+    };
+  });
   return {
     requestId, campaignId, currency, quantity, donorName, phone: donorPhone, whatsapp, country, date, note, participants,
     receivedCents: moneyCents(form.get("receivedAmount")),

@@ -10,10 +10,10 @@ import { adminPhoneError, formatAdminPhoneInput } from "@/lib/admin/phone-input"
 // Static labels and order keep server and browser markup identical across ICU versions.
 const flag = (code: string) => String.fromCodePoint(...[...code].map(c => 127397 + c.charCodeAt(0)));
 
-export function AdminPhoneField({ name, label, countryName, country = "TR", value, onChange, onCountryChange, onBlur, required = false }: {
+export function AdminPhoneField({ name, label, countryName, country = "TR", value, onChange, onCountryChange, onBlur, required = false, compact = false }: {
   name: string; label: string; countryName: string; country?: string; value?: string;
   onChange?: (value: string) => void; onCountryChange?: (country: string) => void;
-  onBlur?: () => void; required?: boolean;
+  onBlur?: () => void; required?: boolean; compact?: boolean;
 }) {
   const id = useId();
   const [localCountry, setLocalCountry] = useState(country);
@@ -47,7 +47,7 @@ export function AdminPhoneField({ name, label, countryName, country = "TR", valu
     input.current?.setCustomValidity(adminPhoneError(next, nextCountry, required));
   };
   return <div className="min-w-0 text-sm">
-    <label htmlFor={id} className="mb-1 block">{label}{required ? " *" : ""}</label>
+    <label htmlFor={id} className={compact ? "sr-only" : "mb-1 block"}>{label}{required ? " *" : ""}</label>
     <div className="flex min-w-0 items-center rounded-lg border border-[var(--admin-border)] bg-[var(--admin-surface)] focus-within:border-blue-400 focus-within:ring-2 focus-within:ring-blue-100">
       <div className="relative flex h-11 w-14 shrink-0 items-center justify-center rounded-l-lg border-r border-[var(--admin-border)] focus-within:ring-2 focus-within:ring-blue-400">
         <span aria-hidden="true">{flag(selected)} ▾</span>
@@ -66,7 +66,7 @@ export function AdminPhoneField({ name, label, countryName, country = "TR", valu
         if (!error) onBlur?.();
       }} placeholder={selected === "TR" ? "532 123 45 67" : "Telefon numarası"} className="min-w-0 flex-1 bg-transparent px-3 py-3 text-sm outline-none" />
     </div>
-    <p id={`${id}-hint`} aria-live="polite" className={`mt-1 text-xs ${editError || (touched && error) ? "text-red-600" : "text-[var(--admin-muted)]"}`}>
+    <p id={`${id}-hint`} aria-live="polite" className={`mt-1 text-xs ${editError || (touched && error) ? "text-red-600" : compact ? "sr-only" : "text-[var(--admin-muted)]"}`}>
       {editError || (touched && error) || (selected === "TR" ? "Başında 0 olmadan 10 rakam · 532 123 45 67" : "Ülke kodunu tekrar yazmadan telefon numarasını girin.")}
     </p>
   </div>;

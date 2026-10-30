@@ -14,6 +14,9 @@ const campaign = {pricing_model:"fixed",unit_price:"2000",currency:"TRY",video_d
 assert.equal(input().phone,"+905551234567");
 assert.equal(input().participants[2].phone,"+905551234567");
 assert.equal(input({"participantName.1":"Başka İsim"}).participants[1].name,"Başka İsim");
+assert.throws(()=>input({participantMode:"different"}),/1. kişi/);
+assert.throws(()=>input({participantMode:"different","participantName.0":"Kişi Bir","participantPhone.0":"0532 123 45 67"}),/2. kişi/);
+assert.equal(input({participantMode:"different","participantName.0":"Kişi Bir","participantPhone.0":"0532 123 45 67","participantName.1":"Kişi İki","participantPhone.1":"0533 123 45 67","participantName.2":"Kişi Üç","participantPhone.2":"0534 123 45 67"}).participants.length,3);
 const international = input({whatsappCountry:"DE", whatsapp:"0151 23456789", "participantCountry.1":"TR", "participantPhone.1":"0532 123 45 67"});
 assert.equal(international.whatsapp,"+4915123456789");
 assert.equal(international.participants[0].phone,"+4915123456789");
