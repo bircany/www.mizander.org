@@ -11,6 +11,7 @@ const state = {
   codeLockedUntil: null as string | null,
   sql: [] as string[],
   detailQueries: [] as Record<string, unknown>[],
+  uploadDestinationAvailable: true,
 };
 (globalThis as unknown as { videoSecurity: typeof state }).videoSecurity =
   state;
@@ -21,7 +22,7 @@ const mocks: Record<string, string> = {
   "@/lib/auth/session":
     "export async function getAdminSession(){return {id:1,role:globalThis.videoSecurity.role,email:'test@example.invalid'}}",
   "@/lib/delivery/storage":
-    "export function getDeliveryVideoLimits(){return {maxBytes:2147483648,maxSeconds:600}};export function getTusdConfiguration(){return {endpoint:'https://test.invalid/uploads'}}",
+    "export function getDeliveryVideoLimits(){return {maxBytes:2147483648,maxSeconds:600}};export function getTusdConfiguration(){if(!globalThis.videoSecurity.uploadDestinationAvailable)throw new Error('missing test upload URL');return {endpoint:'https://test.invalid/uploads'}}",
   "@/lib/delivery/upload-auth":
     "export const DELIVERY_UPLOAD_ALLOWED_MIME=['video/mp4','video/quicktime','video/webm'];export function createDeliveryUploadGrant(){return 'fixture-grant'}",
   "@/lib/database": `export async function withDatabaseTransaction(fn){return fn({query:async(sql)=>{const s=globalThis.videoSecurity;s.calls++;
@@ -93,6 +94,11 @@ for (const role of ["admin", "field_operator"]) {
     assert.equal((await request()).status, 200);
   }
 }
+state.uploadDestinationAvailable = false;
+state.calls = 0;
+assert.equal((await request()).status, 503);
+assert.equal(state.calls, 0, "missing upload service must not reserve a video");
+state.uploadDestinationAvailable = true;
 assert.ok(
   state.sql.some(
     (sql) =>

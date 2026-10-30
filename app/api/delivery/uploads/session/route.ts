@@ -98,6 +98,21 @@ export async function POST(request: Request) {
       ) return json({ ok: false, error: "Gönderim zamanı veya bağışçı sayısı geçersiz." }, 400);
     }
 
+    // Check the upload destination before reserving a video or cancelling pending messages.
+    // A missing local tusd URL must not leave a reservation behind.
+    let uploadEndpoint: string;
+    try {
+      uploadEndpoint = getTusdConfiguration().endpoint;
+    } catch (error) {
+      console.error("Delivery upload destination is unavailable:", error instanceof Error ? error.message : "unknown error");
+      return json({
+        ok: false,
+        error: process.env.NODE_ENV === "production"
+          ? "Video yükleme servisi şu anda kullanılamıyor. Lütfen daha sonra yeniden deneyin."
+          : "Video yükleme servisi bu yerel ortamda bağlı değil. Test video servisi yapılandırılmadan gerçek yükleme yapılamaz.",
+      }, 503);
+    }
+
     const reservation = await reserveDeliveryUploadSession({
       groupId,
       repeatedGroupCode,
@@ -130,7 +145,7 @@ export async function POST(request: Request) {
       uploadId: reservation.uploadId,
       version: reservation.version,
       tokenExpiresAt: reservation.expiresAt,
-      endpoint: `${getTusdConfiguration().endpoint}/`,
+      endpoint: `${uploadEndpoint}/`,
       metadata: {
         token: reservation.grant,
       },
@@ -140,8 +155,8 @@ export async function POST(request: Request) {
         allowedMime: DELIVERY_UPLOAD_ALLOWED_MIME,
       },
     });
-  } catch {
-    console.error("Delivery upload session could not be created.");
+  } catch (error) {
+    console.error("Delivery upload session could not be created:", error);
     return json({
       ok: false,
       error: "Video yükleme oturumu şu anda oluşturulamıyor.",
