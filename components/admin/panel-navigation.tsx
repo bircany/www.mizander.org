@@ -67,6 +67,7 @@ const icons: Record<PanelNavigationIcon, LucideIcon> = {
 
 const mobileRoutePriority: readonly PanelRouteKey[] = [
   "dashboard",
+  "donations",
   "donationManagement",
   "videoDelivery",
   "content",

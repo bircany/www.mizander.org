@@ -89,12 +89,21 @@ export default async function PanelDashboardPage() {
                     Bağış hareketleri
                   </h2>
                 </div>
-                <Link
-                  className="text-sm font-semibold text-[var(--admin-primary)]"
-                  href="/panel/bagis-yonetimi?tab=donations"
-                >
-                  Tümünü aç
-                </Link>
+                <div className="flex items-center gap-3">
+                  <Link
+                    className="text-sm font-semibold text-[var(--admin-primary)]"
+                    href="/panel/bagislar"
+                  >
+                    Bağış Dashboard
+                  </Link>
+                  <span className="text-[var(--admin-border)]">·</span>
+                  <Link
+                    className="text-sm font-semibold text-[var(--admin-muted)] hover:text-[var(--admin-text)]"
+                    href="/panel/bagis-yonetimi?tab=donations"
+                  >
+                    Tümünü aç
+                  </Link>
+                </div>
               </div>
               <div className="mt-4 divide-y divide-[var(--admin-border)]">
                 {donationData.donations.length ? (

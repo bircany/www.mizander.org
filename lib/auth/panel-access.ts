@@ -97,6 +97,14 @@ export const PANEL_NAVIGATION_GROUPS: readonly PanelNavigationGroup[] = [
         roles: PANEL_ROUTE_ACCESS.dashboard,
         route: "dashboard",
       },
+      {
+        href: "/panel/bagislar",
+        icon: "reports",
+        isAvailable: true,
+        label: "Bağış Dashboard",
+        roles: PANEL_ROUTE_ACCESS.donations,
+        route: "donations",
+      },
     ],
   },
   {

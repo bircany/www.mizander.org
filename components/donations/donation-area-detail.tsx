@@ -115,14 +115,14 @@ export function DonationAreaDetail({ area, locale }: Props) {
                 <span className={cn("rounded-full px-3 py-1 text-xs font-semibold", area.isDonationOpen ? "bg-[rgb(166_215_178_/_90%)] text-[var(--admin-primary)]" : "bg-[rgb(245_185_66_/_90%)] text-[var(--admin-warning)]")}>
                   {area.isDonationOpen ? "Yayında" : "Kapalı"}
                 </span>
-                <span className="hidden rounded-full bg-[var(--admin-surface-raised)] px-3 py-1 text-xs font-semibold text-[var(--admin-muted)]">
+                <span className="rounded-full bg-[var(--admin-surface-raised)] px-3 py-1 text-xs font-semibold text-[var(--admin-muted)]">
                   %{area.progress} tamamlandı
                 </span>
               </div>
 
               <p className="mt-5 text-base leading-8 text-[var(--admin-muted)]">{area.description}</p>
 
-              <dl className="hidden mt-6 grid gap-3 sm:grid-cols-3">
+              <dl className="mt-6 grid gap-3 sm:grid-cols-3">
                 <div className="rounded-2xl bg-[var(--admin-surface-raised)] p-4">
                   <dt className="text-xs text-[var(--admin-muted)]">Toplanan</dt>
                   <dd className="mt-2 font-mono text-lg font-semibold text-[var(--admin-text)]">{formatCurrency(area.collectedAmount, area.currency)}</dd>
@@ -137,7 +137,7 @@ export function DonationAreaDetail({ area, locale }: Props) {
                 </div>
               </dl>
 
-              <div className="hidden mt-6">
+              <div className="mt-6">
                 <div className="h-3 overflow-hidden rounded-full bg-[var(--admin-border)]" aria-hidden="true">
                   <div className="h-full rounded-full bg-[var(--admin-primary)]" style={{ width: `${area.progress}%` }} />
                 </div>
@@ -218,7 +218,7 @@ export function DonationAreaDetail({ area, locale }: Props) {
               {notice ? <p className="mt-4 rounded-2xl bg-[rgb(166_215_178_/_18%)] px-4 py-3 text-sm text-[var(--admin-primary)]">{notice}</p> : null}
 
               <button
-                className="admin-action-button mt-5 w-full justify-center"
+                className="admin-action-button mt-6 w-full justify-center"
                 disabled={!donationAmount || !area.isDonationOpen}
                 onClick={addDonation}
                 type="button"

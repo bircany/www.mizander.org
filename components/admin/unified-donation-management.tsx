@@ -62,7 +62,9 @@ export function UnifiedDonationManagement({
     <div className="space-y-5">
       <PanelSectionTabs activeTab={tab} basePath="/panel/bagis-yonetimi" tabs={tabs} />
       <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center sm:justify-between">
-        <ManualDonationForm campaigns={editorData.records}/>
+        <div className="flex flex-wrap items-center gap-2">
+          <ManualDonationForm campaigns={editorData.records}/>
+        </div>
         <form className="relative w-full max-w-md" method="get">
           <input name="tab" type="hidden" value={tab} />
           <Search aria-hidden="true" className="absolute left-3 top-3 size-4 text-[var(--admin-muted)]" />

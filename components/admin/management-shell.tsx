@@ -81,7 +81,7 @@ export function ManagementShell({
   }
 
   return (
-    <div className="admin-panel min-h-screen bg-[var(--admin-surface)] text-[var(--admin-text)]">
+    <div className="admin-panel min-h-screen bg-[var(--admin-surface)] text-[var(--admin-text)]" suppressHydrationWarning>
       {role === "admin" ? <AdminContactMessageNotifier /> : null}
       <div className="min-h-screen bg-[var(--admin-surface)]">
         <header className="hidden h-[73px] items-center justify-between border-b border-[var(--admin-shell-border)] bg-[var(--admin-shell-surface)] px-6 md:flex">
